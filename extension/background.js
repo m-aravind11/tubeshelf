@@ -59,9 +59,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
   if (msg.action === "signOut") {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
-      if (token) chrome.identity.removeCachedAuthToken({ token }, () => {});
+      const finish = () => {
+        chrome.storage.local.set({ signedOut: true }, () => sendResponse({ ok: true }));
+      };
+      if (token) {
+        fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`)
+          .catch(() => {})
+          .finally(() => chrome.identity.removeCachedAuthToken({ token }, finish));
+      } else {
+        finish();
+      }
     });
-    sendResponse({ ok: true });
     return true;
   }
 });

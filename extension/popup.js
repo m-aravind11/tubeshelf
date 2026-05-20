@@ -29,7 +29,7 @@ function renderNoAccount(errorMsg = "") {
     });
 
     if (token) {
-      checkAuthAndLoad();
+      chrome.storage.local.remove("signedOut", () => checkAuthAndLoad());
     } else {
       renderNoAccount("Sign-in failed or was cancelled.");
     }
@@ -73,6 +73,14 @@ function renderEmpty() {
 }
 
 async function checkAuthAndLoad() {
+  const { signedOut } = await new Promise((resolve) =>
+    chrome.storage.local.get("signedOut", resolve)
+  );
+  if (signedOut) {
+    renderNoAccount();
+    return;
+  }
+
   // Probe for a cached token (non-interactive — no prompt)
   const hasToken = await new Promise((resolve) => {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
