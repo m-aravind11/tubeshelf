@@ -1,4 +1,4 @@
-const API_BASE = "https://tubeshelf.vercel.app";
+const API_BASE = "https://tubeshelf-psi.vercel.app";
 
 async function getAccessToken(interactive = false) {
   return new Promise((resolve, reject) => {

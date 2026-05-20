@@ -17,7 +17,7 @@
 
   "host_permissions": [
     "https://www.youtube.com/*",
-    "https://tubeshelf.vercel.app/*"
+    "https://tubeshelf-psi.vercel.app/*"
   ],
 
   "background": {
