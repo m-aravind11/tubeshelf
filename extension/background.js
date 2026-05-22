@@ -61,7 +61,19 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
       if (token) chrome.identity.removeCachedAuthToken({ token }, () => {});
     });
+    chrome.storage.local.set({ extensionSignedOut: true });
     sendResponse({ ok: true });
     return true;
+  }
+});
+
+// When user signs out of their Google account in Chrome, auto-logout the extension.
+// On re-login they must sign in manually via the popup.
+chrome.identity.onSignInChanged.addListener((_account, signedIn) => {
+  if (!signedIn) {
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+      if (token) chrome.identity.removeCachedAuthToken({ token }, () => {});
+    });
+    chrome.storage.local.set({ extensionSignedOut: true });
   }
 });

@@ -146,6 +146,10 @@ activemq-data/
 # SageMath parsed files
 *.sage.py
 
+# Chrome extension signing key and packed binary (never commit these)
+*.pem
+*.crx
+
 # Environments
 .env
 .envrc
