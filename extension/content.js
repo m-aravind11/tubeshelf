@@ -29,7 +29,7 @@
       display: "flex",
       alignItems: "center",
       gap: "8px",
-      bottom: isYTMusic ? "96px" : "80px",
+      bottom: isYTMusic ? "140px" : "128px",
       left: "50%",
       transform: "translateX(-50%)",
       background: isError ? "#c0392b" : "#1a1a2e",
@@ -51,6 +51,12 @@
     }, 4000);
   }
 
+  // ── Spinner keyframe ─────────────────────────────────────────────────────
+
+  const style = document.createElement("style");
+  style.textContent = "@keyframes ts-spin { to { transform: rotate(360deg); } }";
+  (document.head || document.documentElement).appendChild(style);
+
   // ── Button ───────────────────────────────────────────────────────────────
   // Fixed-position overlay — no dependency on YouTube's DOM structure.
 
@@ -71,46 +77,70 @@
     Object.assign(btn.style, {
       position: "fixed",
       bottom: isYTMusic ? "88px" : "76px",
-      right: "16px",
+      left: "50%",
+      transform: "translateX(-50%)",
       zIndex: "9999",
       display: "none",
       alignItems: "center",
       gap: "6px",
-      padding: "7px 14px",
-      borderRadius: "18px",
+      padding: "9px 20px",
+      borderRadius: "20px",
       border: "none",
-      background: "rgba(26,26,46,0.92)",
+      background: "#cc0000",
       color: "#fff",
-      fontSize: "13px",
-      fontWeight: "500",
+      fontSize: "14px",
+      fontWeight: "600",
       cursor: "pointer",
       fontFamily: "Roboto, Arial, sans-serif",
       outline: "none",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-      backdropFilter: "blur(4px)",
-      transition: "opacity 0.15s, transform 0.15s",
+      boxShadow: "0 3px 12px rgba(0,0,0,0.6)",
+      transition: "background 0.15s, transform 0.15s",
+      whiteSpace: "nowrap",
     });
 
     btn.addEventListener("mouseenter", () => {
-      btn.style.background = "rgba(40,40,70,0.97)";
-      btn.style.transform = "translateY(-1px)";
+      btn.style.background = "#aa0000";
+      btn.style.transform = "translateX(-50%) translateY(-2px)";
     });
     btn.addEventListener("mouseleave", () => {
-      btn.style.background = "rgba(26,26,46,0.92)";
-      btn.style.transform = "";
+      btn.style.background = "#cc0000";
+      btn.style.transform = "translateX(-50%)";
     });
 
     btn.addEventListener("click", async () => {
       const videoId = getVideoId();
       if (!videoId) return;
 
-      btn.disabled = true;
-      btn.querySelector("span").textContent = "Shelving…";
+      const iconEl = btn.querySelector("svg");
+      const spanEl = btn.querySelector("span");
 
-      const result = await chrome.runtime.sendMessage({ action: "organize", videoId });
+      btn.disabled = true;
+      iconEl.style.display = "none";
+      const spinner = document.createElement("span");
+      Object.assign(spinner.style, {
+        display: "inline-flex",
+        animation: "ts-spin 0.7s linear infinite",
+      });
+      spinner.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+      btn.insertBefore(spinner, spanEl);
+      spanEl.textContent = "Shelving…";
+
+      const timeout = new Promise((resolve) =>
+        setTimeout(
+          () => resolve({ error: "timeout", message: "Timed out — check your connection and try again." }),
+          10000
+        )
+      );
+
+      const result = await Promise.race([
+        chrome.runtime.sendMessage({ action: "organize", videoId }),
+        timeout,
+      ]);
 
       btn.disabled = false;
-      btn.querySelector("span").textContent = "Shelf It";
+      spinner.remove();
+      iconEl.style.display = "";
+      spanEl.textContent = "Shelf It";
 
       if (result.ok) {
         const count = result.data.playlists.length;
