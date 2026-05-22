@@ -60,7 +60,15 @@ async def organize(body: OrganizeRequest):
     meta = parse_description(video.description, video.tags)
     meta.title = video.title
 
-    existing_playlists = await client.get_my_playlists()
+    try:
+        existing_playlists = await client.get_my_playlists()
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise HTTPException(
+                status_code=400,
+                detail="Your Google account has no YouTube channel. Visit youtube.com to create one first.",
+            )
+        raise HTTPException(status_code=502, detail=f"YouTube API error: {e.response.status_code}")
 
     results: list[PlaylistEntry] = []
 

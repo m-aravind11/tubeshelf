@@ -1,8 +1,10 @@
 const API_BASE = "https://tubeshelf-psi.vercel.app";
 
-async function getAccessToken(interactive = false) {
+async function getAccessToken() {
   return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
+    // Non-interactive — never pop up a Google sign-in dialog from a page button click.
+    // If there's no cached token the user must sign in via the popup explicitly.
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
       if (chrome.runtime.lastError || !token) {
         reject(chrome.runtime.lastError?.message || "No token");
       } else {
@@ -12,12 +14,24 @@ async function getAccessToken(interactive = false) {
   });
 }
 
+async function isSignedOut() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get("extensionSignedOut", ({ extensionSignedOut }) => {
+      resolve(!!extensionSignedOut);
+    });
+  });
+}
+
 async function organizeVideo(videoId) {
+  if (await isSignedOut()) {
+    return { error: "signed_out", message: "Sign in to TubeShelf first — click the extension icon." };
+  }
+
   let token;
   try {
-    token = await getAccessToken(true);
+    token = await getAccessToken();
   } catch (err) {
-    return { error: "auth_failed", message: String(err) };
+    return { error: "auth_failed", message: "Sign in to TubeShelf first — click the extension icon." };
   }
 
   try {
@@ -28,7 +42,6 @@ async function organizeVideo(videoId) {
     });
 
     if (!resp.ok) {
-      // Token may be stale — remove it so next call re-auths
       if (resp.status === 401) {
         chrome.identity.removeCachedAuthToken({ token }, () => {});
       }
@@ -37,8 +50,6 @@ async function organizeVideo(videoId) {
     }
 
     const data = await resp.json();
-
-    // Persist last result for popup display
     await chrome.storage.local.set({ lastResult: data, lastResultAt: Date.now() });
     return { ok: true, data };
   } catch (err) {
@@ -46,10 +57,21 @@ async function organizeVideo(videoId) {
   }
 }
 
+function clearAuthAndSetFlag(callback) {
+  chrome.identity.getAuthToken({ interactive: false }, (token) => {
+    const done = () => chrome.storage.local.set({ extensionSignedOut: true }, callback);
+    if (token) {
+      chrome.identity.removeCachedAuthToken({ token }, done);
+    } else {
+      done();
+    }
+  });
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.action === "organize") {
     organizeVideo(msg.videoId).then(sendResponse);
-    return true; // keep channel open for async response
+    return true;
   }
 
   if (msg.action === "getStatus") {
@@ -58,22 +80,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
 
   if (msg.action === "signOut") {
-    chrome.identity.getAuthToken({ interactive: false }, (token) => {
-      if (token) chrome.identity.removeCachedAuthToken({ token }, () => {});
-    });
-    chrome.storage.local.set({ extensionSignedOut: true });
-    sendResponse({ ok: true });
+    clearAuthAndSetFlag(() => sendResponse({ ok: true }));
     return true;
   }
 });
 
-// When user signs out of their Google account in Chrome, auto-logout the extension.
-// On re-login they must sign in manually via the popup.
+// Auto-logout when the Chrome Google account signs out.
 chrome.identity.onSignInChanged.addListener((_account, signedIn) => {
   if (!signedIn) {
-    chrome.identity.getAuthToken({ interactive: false }, (token) => {
-      if (token) chrome.identity.removeCachedAuthToken({ token }, () => {});
-    });
-    chrome.storage.local.set({ extensionSignedOut: true });
+    clearAuthAndSetFlag(() => {});
   }
 });
