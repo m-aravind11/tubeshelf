@@ -12,7 +12,7 @@ function renderNoAccount(errorMsg = "") {
   signOutBtn.style.display = "none";
   main.innerHTML = `
     <div class="not-signed-in">
-      <p>Sign in with Google to auto-organize your YouTube playlists.</p>
+      <p>Sign in with Google to auto-organize your YouTube &amp; YT Music playlists.</p>
       ${errorMsg ? `<p class="error-msg">${errorMsg}</p>` : ""}
       <button class="btn-primary" id="signInBtn">Sign in with Google</button>
     </div>
@@ -29,6 +29,7 @@ function renderNoAccount(errorMsg = "") {
     });
 
     if (token) {
+      await chrome.storage.local.remove("extensionSignedOut");
       checkAuthAndLoad();
     } else {
       renderNoAccount("Sign-in failed or was cancelled.");
@@ -73,6 +74,12 @@ function renderEmpty() {
 }
 
 async function checkAuthAndLoad() {
+  const { extensionSignedOut } = await chrome.storage.local.get("extensionSignedOut");
+  if (extensionSignedOut) {
+    renderNoAccount();
+    return;
+  }
+
   // Probe for a cached token (non-interactive — no prompt)
   const hasToken = await new Promise((resolve) => {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
