@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TubeShelf — Privacy Policy</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 26px; margin-bottom: 4px; }
+    h2 { font-size: 18px; margin-top: 32px; }
+    .updated { color: #666; font-size: 14px; margin-bottom: 32px; }
+    a { color: #cc0000; }
+    code { background: #f2f2f2; padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+    ul { padding-left: 22px; }
+  </style>
+</head>
+<body>
+  <h1>TubeShelf — Privacy Policy</h1>
+  <p class="updated">Last updated: July 8, 2026</p>
+
+  <p>
+    TubeShelf is a Chrome extension that organizes YouTube and YouTube Music songs
+    into your own YouTube playlists (by singer, music director, movie, and similar
+    tags) with one click. This page explains what data TubeShelf accesses, how it's
+    used, and what is (and isn't) stored.
+  </p>
+
+  <h2>What TubeShelf accesses</h2>
+  <ul>
+    <li><strong>Your Google OAuth token</strong>, obtained via Chrome's built-in
+      <code>chrome.identity</code> sign-in — TubeShelf never sees your Google
+      password.</li>
+    <li><strong>The video you're currently watching</strong> — its title,
+      description, and tags, read via the YouTube Data API, to figure out singer /
+      music director / movie / etc.</li>
+    <li><strong>Your YouTube playlists</strong> — read to check which playlists
+      already exist and whether a song is already in one, and written to when you
+      confirm adding a song (creating a playlist and/or adding the video).</li>
+  </ul>
+
+  <h2>What TubeShelf does <em>not</em> do</h2>
+  <ul>
+    <li>It does not access videos other than the one you explicitly click "Shelf
+      It" on.</li>
+    <li>It does not read your watch history, subscriptions, comments, or any
+      other YouTube data.</li>
+    <li>It does not sell, rent, or share your data with any third party.</li>
+    <li>It does not use your data for advertising.</li>
+  </ul>
+
+  <h2>What is stored, and where</h2>
+  <p>
+    TubeShelf's backend is <strong>stateless</strong> — it has no database. Each
+    request is processed and then forgotten; nothing about you, your videos, or
+    your playlists is retained on our server.
+  </p>
+  <p>
+    Locally, in your own browser's <code>chrome.storage.local</code> (never sent
+    anywhere), the extension keeps only:
+  </p>
+  <ul>
+    <li>A flag remembering that you signed out, so you aren't re-prompted to sign
+      in on every page.</li>
+    <li>The result of your <em>last</em> "Shelf It" action (the video title and
+      which playlists were affected), so the extension popup can show it to you.</li>
+  </ul>
+
+  <h2>Data in transit</h2>
+  <p>
+    Your OAuth access token and video ID are sent over HTTPS to TubeShelf's
+    backend, which uses that token to call the official YouTube Data API on your
+    behalf. The token is used only for the duration of that request and is not
+    logged or stored.
+  </p>
+
+  <h2>Revoking access</h2>
+  <p>
+    You can revoke TubeShelf's access to your Google account at any time from
+    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">
+      Google Account → Security → Third-party access</a>.
+  </p>
+
+  <h2>Children's privacy</h2>
+  <p>TubeShelf is not directed at children under 13 and does not knowingly collect data from them.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If this policy changes, the "Last updated" date above will be revised accordingly.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy: <a href="mailto:aravind.m@gonuclei.com">aravind.m@gonuclei.com</a></p>
+</body>
+</html>
