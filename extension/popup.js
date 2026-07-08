@@ -68,7 +68,7 @@ function renderEmpty() {
   main.innerHTML = `
     <div class="status">
       <div class="label">Last shelved</div>
-      <div class="value dim">Nothing yet — open a YouTube song and click "Shelf It".</div>
+      <div class="value dim">Nothing yet. Open a YouTube song and click "Shelf It".</div>
     </div>
   `;
 }
@@ -80,7 +80,7 @@ async function checkAuthAndLoad() {
     return;
   }
 
-  // Probe for a cached token (non-interactive — no prompt)
+  // Probe for a cached token (non-interactive, no prompt)
   const hasToken = await new Promise((resolve) => {
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
       resolve(!!token && !chrome.runtime.lastError);

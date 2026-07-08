@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
@@ -98,10 +98,15 @@ async def landing_page():
         return f.read()
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "..", "assets", "favicon.ico"))
+
+
 @app.post("/api/preview", response_model=PreviewResponse)
 async def preview(body: PreviewRequest):
     """Parse a video's metadata into proposed playlist entries, without creating
-    or modifying anything — the user confirms/edits these before /api/organize."""
+    or modifying anything, the user confirms/edits these before /api/organize."""
     client = YouTubeClient(body.access_token)
 
     video = await client.get_video(body.video_id)
@@ -118,7 +123,7 @@ async def preview(body: PreviewRequest):
         try:
             existing_playlists = await client.get_my_playlists()
         except httpx.HTTPStatusError:
-            pass  # non-fatal — preview still works, just without the heads-up
+            pass  # non-fatal, preview still works, just without the heads-up
 
     entries: list[PreviewEntry] = []
     for category, value in raw_entries:

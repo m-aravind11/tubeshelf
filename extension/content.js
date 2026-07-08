@@ -60,7 +60,7 @@
   function withTimeout(promise, ms = 10000) {
     const timeout = new Promise((resolve) =>
       setTimeout(
-        () => resolve({ error: "timeout", message: "Timed out — check your connection and try again." }),
+        () => resolve({ error: "timeout", message: "Timed out, check your connection and try again." }),
         ms
       )
     );
@@ -128,7 +128,7 @@
     const subheading = document.createElement("div");
     const alreadyAddedCount = entries.filter((e) => e.already_added).length;
     subheading.textContent = alreadyAddedCount
-      ? `Edit before shelving — ${alreadyAddedCount} pre-filled from playlists it's already in:`
+      ? `Edit before shelving: ${alreadyAddedCount} pre-filled from playlists it's already in:`
       : "Edit before shelving:";
     Object.assign(subheading.style, { fontSize: "12px", color: "#aaa", marginBottom: "12px" });
 
@@ -194,7 +194,7 @@
       if (alreadyAdded) {
         const badge = document.createElement("span");
         badge.textContent = "already in";
-        badge.title = "Prefetched — the video is already in this playlist";
+        badge.title = "Prefetched: the video is already in this playlist";
         Object.assign(badge.style, {
           fontSize: "10px",
           color: "#64b5f6",
@@ -312,7 +312,7 @@
   function createButton() {
     const btn = document.createElement("button");
     btn.id = BUTTON_ID;
-    btn.title = "Shelf It — organize into auto-playlists";
+    btn.title = "Shelf It: organize into auto-playlists";
 
     btn.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -398,7 +398,7 @@
       try {
         result = await withTimeout(chrome.runtime.sendMessage({ action: "preview", videoId }));
       } catch (err) {
-        result = { error: "extension_error", message: "Extension error — try reloading the page." };
+        result = { error: "extension_error", message: "Extension error, try reloading the page." };
       } finally {
         setLoading(false);
       }
@@ -437,7 +437,7 @@
             chrome.runtime.sendMessage({ action: "organize", videoId, title, entries: finalEntries })
           );
         } catch (err) {
-          organizeResult = { error: "extension_error", message: "Extension error — try reloading the page." };
+          organizeResult = { error: "extension_error", message: "Extension error, try reloading the page." };
         }
 
         if (organizeResult.ok) {

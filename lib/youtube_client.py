@@ -134,7 +134,7 @@ class YouTubeClient:
 
     async def add_video_to_playlist(self, playlist_id: str, video_id: str) -> bool:
         """Add video to playlist. Caller is responsible for checking
-        get_playlist_video_ids first — the API inserts duplicates silently."""
+        get_playlist_video_ids first, the API inserts duplicates silently."""
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{YT_API_BASE}/playlistItems",

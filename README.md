@@ -78,8 +78,11 @@ const API_BASE = "https://tubeshelf-psi.vercel.app";
 ```
 
 For local testing against `uvicorn` on port 8000, change this to
-`http://localhost:8000`, then reload the extension from `chrome://extensions`.
-Revert before shipping/reloading against production.
+`http://localhost:8000`. You also need to add `http://localhost:8000/*` to
+`host_permissions` in `extension/manifest.json`, MV3 service workers can't
+fetch an origin that isn't declared there, so the request silently fails
+without it. Then reload the extension from `chrome://extensions`.
+Revert both before shipping/reloading against production.
 
 ### Using it
 

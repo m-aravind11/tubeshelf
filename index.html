@@ -12,6 +12,7 @@
 
     :root {
       --bg: #0f0f0f;
+      --bg-alt: #141414;
       --bg-card: #1a1a1a;
       --bg-card-hover: #212121;
       --border: #2a2a2a;
@@ -141,9 +142,17 @@
     .shot-arrow.prev { left: 12px; }
     .shot-arrow.next { right: 12px; }
 
+    .shot-caption {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 13.5px;
+      color: var(--text-dim);
+    }
+
 
     /* Sections */
-    section { padding: 56px 24px; border-top: 1px solid var(--border); }
+    section { padding: 40px 24px; }
+    section:nth-of-type(even) { background: var(--bg-alt); }
     section h2 {
       font-size: 26px;
       text-align: center;
@@ -222,6 +231,27 @@
       gap: 10px;
       font-size: 13.5px;
       line-height: 1.5;
+      color: var(--text-dim);
+    }
+    .trust-item .check { color: #4caf50; flex-shrink: 0; }
+
+    /* Footer CTA */
+    .footer-cta { text-align: center; padding: 64px 24px; }
+    .footer-cta h2 { margin-bottom: 12px; }
+    .footer-cta p { color: var(--text-dim); margin-bottom: 28px; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-dimmer);
+    }
+    footer a:hover { color: var(--text-dim); }
+    footer .sep { margin: 0 10px; }
+
+    @media (max-width: 680px) {
+      .steps { grid-template-columns: 1fr; }
       .nav-links { display: none; }
     }
   </style>
@@ -254,12 +284,14 @@
     </div>
 
     <div class="shot" id="shot">
-      <img class="active" src="/assets/screenshot-shelf-it.png" alt="The Shelf It button on a YouTube Music watch page" />
-      <img src="/assets/screenshot-edit-tags.png" alt="Editing the parsed Music Director, Lyricist, Year, and Decade tags before shelving a song" />
-      <img src="/assets/screenshot-last-shelved.png" alt="TubeShelf popup showing the last shelved song and the playlists it was added to" />
+      <img class="active" src="/assets/screenshot-shelf-it.png" alt="The Shelf It button on a YouTube Music watch page" data-caption="The Shelf It button appears on any song's watch page" />
+      <img src="/assets/screenshot-edit-tags.png" alt="Editing the parsed Music Director, Lyricist, Year, and Decade tags before shelving a song" data-caption="Review and edit the parsed tags before confirming" />
+      <img src="/assets/screenshot-last-shelved.png" alt="TubeShelf popup showing the last shelved song and the playlists it was added to" data-caption="The popup shows the last shelved song and its playlists" />
+      <img src="/assets/auto-created-playlists.png" alt="YouTube Music library showing playlists auto-created by TubeShelf, organized by Decade, Year, Music Director, Lyricist, and Singer" data-caption="Playlists are created and organized automatically in your library" />
       <button class="shot-arrow prev" id="shotPrev" aria-label="Previous screenshot">&#8249;</button>
       <button class="shot-arrow next" id="shotNext" aria-label="Next screenshot">&#8250;</button>
     </div>
+    <p class="shot-caption" id="shotCaption">The Shelf It button appears on any song's watch page</p>
   </header>
 
   <section id="how-it-works">
@@ -307,7 +339,7 @@
     </div>
   </section>
 
-  <section class="footer-cta" style="border-top: 1px solid var(--border);">
+  <section class="footer-cta">
     <h2>Your playlists, organized automatically</h2>
     <p>Free, open source, and ready in under a minute.</p>
     <div class="cta-row">
@@ -324,12 +356,14 @@
   <script>
     (function () {
       var images = document.querySelectorAll("#shot img");
+      var caption = document.getElementById("shotCaption");
       var current = 0;
       var timer;
 
       function show(index) {
         current = index;
         images.forEach(function (img, i) { img.classList.toggle("active", i === index); });
+        caption.textContent = images[index].dataset.caption;
       }
 
       function next() {

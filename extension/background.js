@@ -2,7 +2,7 @@ const API_BASE = "https://tubeshelf-psi.vercel.app";
 
 async function getAccessToken() {
   return new Promise((resolve, reject) => {
-    // Non-interactive — never pop up a Google sign-in dialog from a page button click.
+    // Non-interactive: never pop up a Google sign-in dialog from a page button click.
     // If there's no cached token the user must sign in via the popup explicitly.
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
       if (chrome.runtime.lastError || !token) {
@@ -24,14 +24,14 @@ async function isSignedOut() {
 
 async function previewVideo(videoId) {
   if (await isSignedOut()) {
-    return { error: "signed_out", message: "Sign in to TubeShelf first — click the extension icon." };
+    return { error: "signed_out", message: "Sign in to TubeShelf first, click the extension icon." };
   }
 
   let token;
   try {
     token = await getAccessToken();
   } catch (err) {
-    return { error: "auth_failed", message: "Sign in to TubeShelf first — click the extension icon." };
+    return { error: "auth_failed", message: "Sign in to TubeShelf first, click the extension icon." };
   }
 
   try {
@@ -58,14 +58,14 @@ async function previewVideo(videoId) {
 
 async function organizeVideo(videoId, title, entries) {
   if (await isSignedOut()) {
-    return { error: "signed_out", message: "Sign in to TubeShelf first — click the extension icon." };
+    return { error: "signed_out", message: "Sign in to TubeShelf first, click the extension icon." };
   }
 
   let token;
   try {
     token = await getAccessToken();
   } catch (err) {
-    return { error: "auth_failed", message: "Sign in to TubeShelf first — click the extension icon." };
+    return { error: "auth_failed", message: "Sign in to TubeShelf first, click the extension icon." };
   }
 
   try {
