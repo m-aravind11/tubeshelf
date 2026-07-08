@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
 
@@ -22,6 +23,15 @@ app.add_middleware(
     ],
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
+)
+
+# Vercel serves everything under assets/ as static files directly in
+# production; this mount exists only so `uvicorn --reload` matches that
+# behavior for local development.
+app.mount(
+    "/assets",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "assets")),
+    name="assets",
 )
 
 
