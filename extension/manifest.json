@@ -6,8 +6,7 @@
 
   "permissions": [
     "identity",
-    "storage",
-    "activeTab"
+    "storage"
   ],
 
   "oauth2": {
@@ -18,8 +17,7 @@
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://music.youtube.com/*",
-    "https://tubeshelf-psi.vercel.app/*",
-    "http://localhost:8000/*"
+    "https://tubeshelf-psi.vercel.app/*"
   ],
 
   "background": {

@@ -226,3 +226,7 @@ __marimo__/
 AGENTS.md
 CLAUDE.md
 .claude/
+
+
+## Not needed
+.DS_Store
