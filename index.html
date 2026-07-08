@@ -4,13 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TubeShelf: Auto-organize your YouTube Music playlists</title>
-<<<<<<< HEAD
-  <meta name="description" content="TubeShelf is a Chrome extension that sorts YouTube / YouTube Music songs into playlists by Singer, Music Director, Movie, Lyricist, and Language, with one click." />
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
-  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
-=======
   <meta name="description" content="TubeShelf is a Chrome extension that sorts YouTube / YouTube Music songs into playlists by Singer, Music Director, Film, Lyricist, and Language, with one click." />
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -38,24 +32,14 @@
     .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 
     /* Nav */
-<<<<<<< HEAD
-    nav { border-bottom: 1px solid var(--border); }
-    nav .wrap {
-=======
     nav.wrap {
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding-top: 24px;
       padding-bottom: 24px;
     }
-<<<<<<< HEAD
-    .logo-group { display: flex; align-items: center; gap: 14px; }
-    .logo { font-size: 40px; font-weight: 700; letter-spacing: -0.3px; }
-=======
     .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     .logo span { color: var(--red); }
     .nav-links { display: flex; gap: 24px; font-size: 14px; color: var(--text-dim); }
     .nav-links a:hover { color: var(--text); }
@@ -63,11 +47,7 @@
     /* Hero */
     header.hero {
       text-align: center;
-<<<<<<< HEAD
-      padding: 32px 24px 56px;
-=======
       padding: 64px 24px 56px;
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     }
     .badge {
       display: inline-block;
@@ -75,15 +55,9 @@
       color: var(--text-dim);
       background: var(--bg-card);
       border: 1px solid var(--border);
-<<<<<<< HEAD
-      border-radius: 10px;
-      padding: 5px 10px;
-      white-space: nowrap;
-=======
       border-radius: 20px;
       padding: 5px 14px;
       margin-bottom: 24px;
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     }
     h1 {
       font-size: clamp(32px, 5vw, 48px);
@@ -118,53 +92,6 @@
     .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--bg-card-hover); }
 
-<<<<<<< HEAD
-    /* Screenshot carousel */
-    .shot {
-      position: relative;
-      max-width: 720px;
-      aspect-ratio: 1152 / 600;
-      margin: 48px auto 0;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
-    }
-    .shot img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: contain;
-      background: #000;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .shot img.active { opacity: 1; }
-
-    .shot-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 50%;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      z-index: 2;
-    }
-    .shot-arrow:hover { background: rgba(0, 0, 0, 0.8); }
-    .shot-arrow.prev { left: 12px; }
-    .shot-arrow.next { right: 12px; }
-
-=======
     /* Demo mock */
     .demo {
       max-width: 420px;
@@ -200,7 +127,6 @@
       padding: 9px;
       border-radius: 6px;
     }
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
 
     /* Sections */
     section { padding: 56px 24px; border-top: 1px solid var(--border); }
@@ -252,15 +178,9 @@
     .categories {
       display: flex;
       flex-wrap: wrap;
-<<<<<<< HEAD
-      justify-content: center;
-      gap: 10px;
-      max-width: 560px;
-=======
       gap: 10px;
       justify-content: center;
       max-width: 640px;
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       margin: 0 auto;
     }
     .category-pill {
@@ -269,40 +189,24 @@
       border-radius: 8px;
       padding: 14px 18px;
       font-size: 14px;
-<<<<<<< HEAD
-      text-align: center;
-      flex: 0 1 160px;
-=======
       min-width: 140px;
       text-align: center;
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     }
     .category-pill .label { color: var(--text-dimmer); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .category-pill .example { font-weight: 500; }
 
     /* Trust / privacy */
     .trust-grid {
-<<<<<<< HEAD
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 600px;
-=======
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
       max-width: 640px;
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       margin: 0 auto;
     }
     .trust-item {
       display: flex;
       gap: 10px;
       font-size: 13.5px;
-<<<<<<< HEAD
-      line-height: 1.5;
-=======
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       color: var(--text-dim);
     }
     .trust-item .check { color: #4caf50; flex-shrink: 0; }
@@ -324,51 +228,27 @@
 
     @media (max-width: 680px) {
       .steps { grid-template-columns: 1fr; }
-<<<<<<< HEAD
-=======
       .trust-grid { grid-template-columns: 1fr; }
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
-<<<<<<< HEAD
-  <nav>
-    <div class="wrap">
-      <div class="logo-group">
-        <div class="logo">Tube<span>Shelf</span></div>
-        <span class="badge">For YouTube &amp; YouTube Music</span>
-      </div>
-      <div class="nav-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="https://github.com/m-aravind11/tubeshelf" target="_blank" rel="noopener">GitHub</a>
-        <a href="/privacy.html">Privacy</a>
-      </div>
-=======
   <nav class="wrap">
     <div class="logo">Tube<span>Shelf</span></div>
     <div class="nav-links">
       <a href="#how-it-works">How it works</a>
       <a href="https://github.com/m-aravind11/tubeshelf" target="_blank" rel="noopener">GitHub</a>
       <a href="/privacy.html">Privacy</a>
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     </div>
   </nav>
 
   <header class="hero">
-<<<<<<< HEAD
-    <h1>Stop sorting songs into playlists <span class="accent">by hand</span>.</h1>
-    <p class="subtitle">
-      TubeShelf reads the video/song's own description and automatically creates
-      or updates playlists by Singer, Music Director, Movie, Lyricist, and
-=======
     <span class="badge">Chrome extension · YouTube &amp; YouTube Music</span>
     <h1>Stop sorting songs into playlists <span class="accent">by hand</span>.</h1>
     <p class="subtitle">
       TubeShelf reads the video's own description and automatically creates
       or updates playlists by Singer, Music Director, Film, Lyricist, and
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       Language. One click, no typing.
     </p>
     <div class="cta-row">
@@ -376,14 +256,6 @@
       <a class="btn btn-secondary" href="https://github.com/m-aravind11/tubeshelf" target="_blank" rel="noopener">View on GitHub</a>
     </div>
 
-<<<<<<< HEAD
-    <div class="shot" id="shot">
-      <img class="active" src="/assets/screenshot-shelf-it.png" alt="The Shelf It button on a YouTube Music watch page" />
-      <img src="/assets/screenshot-edit-tags.png" alt="Editing the parsed Music Director, Lyricist, Year, and Decade tags before shelving a song" />
-      <img src="/assets/screenshot-last-shelved.png" alt="TubeShelf popup showing the last shelved song and the playlists it was added to" />
-      <button class="shot-arrow prev" id="shotPrev" aria-label="Previous screenshot">&#8249;</button>
-      <button class="shot-arrow next" id="shotNext" aria-label="Next screenshot">&#8250;</button>
-=======
     <div class="demo">
       <div class="demo-title">music.youtube.com</div>
       <div class="video-title">Kun Faya Kun (Rockstar)</div>
@@ -394,7 +266,6 @@
         <div class="entry"><span class="cat">Lyrics</span><span class="val">Irshad Kamil</span></div>
       </div>
       <div class="shelf-btn">Shelf It</div>
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     </div>
   </header>
 
@@ -410,11 +281,7 @@
       <div class="step">
         <div class="num">2</div>
         <h3>Review the tags</h3>
-<<<<<<< HEAD
-        <p>TubeShelf parses Singer, Music Director, Movie, Lyricist, and Language from the description. Edit anything before confirming.</p>
-=======
         <p>TubeShelf parses Singer, Music Director, Film, Lyricist, and Language from the description. Edit anything before confirming.</p>
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       </div>
       <div class="step">
         <div class="num">3</div>
@@ -428,17 +295,10 @@
     <h2>Organized by what matters</h2>
     <p class="section-sub">Every song lands in the playlists you'd actually want to browse later.</p>
     <div class="categories">
-<<<<<<< HEAD
-      <div class="category-pill"><div class="label">Singer</div><div class="example">Madhubanti Bagchi</div></div>
-      <div class="category-pill"><div class="label">Music Director</div><div class="example">Shashwat Sachdev</div></div>
-      <div class="category-pill"><div class="label">Movie</div><div class="example">Dhurandhar</div></div>
-      <div class="category-pill"><div class="label">Lyricist</div><div class="example">Indeevar</div></div>
-=======
       <div class="category-pill"><div class="label">Singer</div><div class="example">Arijit Singh</div></div>
       <div class="category-pill"><div class="label">Music</div><div class="example">A.R. Rahman</div></div>
       <div class="category-pill"><div class="label">Film</div><div class="example">Rockstar</div></div>
       <div class="category-pill"><div class="label">Lyrics</div><div class="example">Gulzar</div></div>
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
       <div class="category-pill"><div class="label">Language</div><div class="example">Hindi</div></div>
     </div>
   </section>
@@ -447,17 +307,10 @@
     <h2>Built to stay out of your way</h2>
     <p class="section-sub">Stateless backend, minimal permissions, nothing tracked.</p>
     <div class="trust-grid">
-<<<<<<< HEAD
-      <div class="trust-item"><span class="check">✓</span><span>Signs in with your Google account via Chrome's built-in identity. TubeShelf never sees your password.</span></div>
-      <div class="trust-item"><span class="check">✓</span><span>No database. Requests are processed and forgotten, not logged or stored.</span></div>
-      <div class="trust-item"><span class="check">✓</span><span>Only touches the video you click "Shelf It" on. No watch history, no subscriptions.</span></div>
-      <div class="trust-item"><span class="check">✓</span><span>Open source. Read exactly what it does on <a href="https://github.com/m-aravind11/tubeshelf" target="_blank" rel="noopener" style="color:#4caf50; text-decoration:underline;">GitHub</a>.</span></div>
-=======
       <div class="trust-item"><span class="check">✓</span>Signs in with your Google account via Chrome's built-in identity. TubeShelf never sees your password.</div>
       <div class="trust-item"><span class="check">✓</span>No database. Requests are processed and forgotten, not logged or stored.</div>
       <div class="trust-item"><span class="check">✓</span>Only touches the video you click "Shelf It" on. No watch history, no subscriptions.</div>
       <div class="trust-item"><span class="check">✓</span>Open source. Read exactly what it does on <a href="https://github.com/m-aravind11/tubeshelf" target="_blank" rel="noopener" style="color:#4caf50; text-decoration:underline;">GitHub</a>.</div>
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
     </div>
   </section>
 
@@ -474,45 +327,5 @@
     <span class="sep">·</span>
     <a href="/privacy.html">Privacy Policy</a>
   </footer>
-<<<<<<< HEAD
-
-  <script>
-    (function () {
-      var images = document.querySelectorAll("#shot img");
-      var current = 0;
-      var timer;
-
-      function show(index) {
-        current = index;
-        images.forEach(function (img, i) { img.classList.toggle("active", i === index); });
-      }
-
-      function next() {
-        show((current + 1) % images.length);
-      }
-
-      function prev() {
-        show((current - 1 + images.length) % images.length);
-      }
-
-      function restart() {
-        clearInterval(timer);
-        timer = setInterval(next, 3000);
-      }
-
-      document.getElementById("shotNext").addEventListener("click", function () {
-        next();
-        restart();
-      });
-      document.getElementById("shotPrev").addEventListener("click", function () {
-        prev();
-        restart();
-      });
-
-      restart();
-    })();
-  </script>
-=======
->>>>>>> d79fe66d04960b99b9938c3b031dd27d52cde207
 </body>
 </html>
