@@ -73,11 +73,18 @@ async def health():
 
 
 _PRIVACY_POLICY_PATH = os.path.join(os.path.dirname(__file__), "..", "privacy.html")
+_LANDING_PAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "index.html")
 
 
 @app.get("/privacy.html", response_class=HTMLResponse)
 async def privacy_policy():
     with open(_PRIVACY_POLICY_PATH, encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/", response_class=HTMLResponse)
+async def landing_page():
+    with open(_LANDING_PAGE_PATH, encoding="utf-8") as f:
         return f.read()
 
 
