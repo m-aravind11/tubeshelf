@@ -170,20 +170,6 @@ async def organize(body: OrganizeRequest):
         playlist_name = f"{entry.category.strip()}: {entry.value.strip()}"
         try:
             pl = await client.ensure_playlist(playlist_name, existing_playlists)
-
-            already_present = False
-            if not pl.created:
-                existing_video_ids = await client.get_playlist_video_ids(pl.playlist_id)
-                already_present = body.video_id in existing_video_ids
-
-            added = False if already_present else await client.add_video_to_playlist(pl.playlist_id, body.video_id)
-
-            results.append(PlaylistEntry(
-                name=playlist_name,
-                playlist_id=pl.playlist_id,
-                created=pl.created,
-                added=added,
-            ))
         except httpx.HTTPStatusError:
             results.append(PlaylistEntry(
                 name=playlist_name,
@@ -191,6 +177,24 @@ async def organize(body: OrganizeRequest):
                 created=False,
                 added=False,
             ))
+            continue
+
+        try:
+            already_present = False
+            if not pl.created:
+                existing_video_ids = await client.get_playlist_video_ids(pl.playlist_id)
+                already_present = body.video_id in existing_video_ids
+
+            added = False if already_present else await client.add_video_to_playlist(pl.playlist_id, body.video_id)
+        except httpx.HTTPStatusError:
+            added = False
+
+        results.append(PlaylistEntry(
+            name=playlist_name,
+            playlist_id=pl.playlist_id,
+            created=pl.created,
+            added=added,
+        ))
 
     return OrganizeResponse(
         video_id=body.video_id,

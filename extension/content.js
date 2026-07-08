@@ -3,6 +3,10 @@
   const TOAST_ID = "tubeshelf-toast";
   const isYTMusic = window.location.hostname === "music.youtube.com";
 
+  // Bumped on every navigation so a slow/late response for a video the user
+  // has already left doesn't reset the button or pop a modal on the new one.
+  let activeRequestId = 0;
+
   function getVideoId() {
     return new URLSearchParams(window.location.search).get("v");
   }
@@ -393,6 +397,7 @@
       if (!videoId) return;
 
       document.getElementById(MODAL_ID)?.remove();
+      const requestId = ++activeRequestId;
       setLoading(true, "Loading…");
       let result;
       try {
@@ -400,8 +405,11 @@
       } catch (err) {
         result = { error: "extension_error", message: "Extension error, try reloading the page." };
       } finally {
-        setLoading(false);
+        if (requestId === activeRequestId) setLoading(false);
       }
+
+      // Stale: user navigated to a different video while this was in flight.
+      if (requestId !== activeRequestId) return;
 
       if (!result.ok) {
         showToast(result.message || "Something went wrong", true);
@@ -443,11 +451,13 @@
         if (organizeResult.ok) {
           modal.overlay.remove();
           const playlists = organizeResult.data.playlists;
-          const created = playlists.filter((p) => p.created).length;
-          const updated = playlists.filter((p) => !p.created && p.added).length;
           const failed = playlists.filter((p) => !p.playlist_id).length;
+          const created = playlists.filter((p) => p.playlist_id && p.created).length;
+          const updated = playlists.filter((p) => p.playlist_id && !p.created && p.added).length;
+          const alreadyIn = playlists.filter((p) => p.playlist_id && !p.created && !p.added).length;
 
           let message = `${created} created, ${updated} updated`;
+          if (alreadyIn) message += `, ${alreadyIn} already in`;
           if (failed) message += `, ${failed} failed`;
           showToast(message);
         } else {
@@ -460,12 +470,12 @@
     if (isYTMusic) {
       document.body.appendChild(btn);
     }
-    return btn;
+    return { btn, setLoading };
   }
 
   // ── Visibility ───────────────────────────────────────────────────────────
 
-  const btn = createButton();
+  const { btn, setLoading: setButtonLoading } = createButton();
 
   function ensureButtonPlaced() {
     if (isYTMusic) return; // already anchored to document.body once, at creation
@@ -473,6 +483,14 @@
     if (titleEl && !titleEl.contains(btn)) {
       titleEl.appendChild(btn);
     }
+  }
+
+  // Invalidate any in-flight preview/organize request tied to the video we're
+  // leaving, and snap the button back to its idle state for the new one.
+  function resetForNavigation() {
+    activeRequestId++;
+    document.getElementById(MODAL_ID)?.remove();
+    setButtonLoading(false);
   }
 
   function syncVisibility() {
@@ -483,16 +501,23 @@
   syncVisibility();
 
   // URL changes (SPA navigation)
-  document.addEventListener("yt-navigate-finish", syncVisibility);
+  document.addEventListener("yt-navigate-finish", () => {
+    resetForNavigation();
+    syncVisibility();
+  });
   document.addEventListener("yt-page-data-updated", syncVisibility);
 
   // Fallback: autoplay advancing to the next track (e.g. from a radio/mix
   // queue) doesn't reliably fire the events above, so poll the URL directly.
+  // Also retry placement every tick even without a URL change, since on
+  // first load the title node can mount after this script runs.
   let lastHref = location.href;
   setInterval(() => {
     if (location.href !== lastHref) {
       lastHref = location.href;
+      resetForNavigation();
       syncVisibility();
     }
+    ensureButtonPlaced();
   }, 800);
 })();
