@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from pydantic import BaseModel
 import httpx
 
@@ -70,6 +70,15 @@ class OrganizeResponse(BaseModel):
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+_PRIVACY_POLICY_PATH = os.path.join(os.path.dirname(__file__), "..", "privacy.html")
+
+
+@app.get("/privacy.html", response_class=HTMLResponse)
+async def privacy_policy():
+    with open(_PRIVACY_POLICY_PATH, encoding="utf-8") as f:
+        return f.read()
 
 
 @app.post("/api/preview", response_model=PreviewResponse)
