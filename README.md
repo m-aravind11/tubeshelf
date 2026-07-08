@@ -35,8 +35,22 @@ only needs the OAuth access token the extension sends with each request.
 
 ### Deploy
 
-Deployed on Vercel; `vercel.json` rewrites `/api/*` to `api/index.py`. Pushing
-to `master` auto-deploys (see `vercel.json`). To deploy manually:
+Deployed on Vercel; `vercel.json` rewrites `/api/*` to `api/index.py`.
+
+**Only pushes to `master` should trigger a deployment.** `vercel.json`'s
+`git.deploymentEnabled` does *not* enforce this by itself — Vercel deploys
+every branch push by default, and that field can only disable specific named
+branches, not allowlist one. The actual gate is in the Vercel dashboard:
+**Project Settings -> Build and Deployment -> Ignored Build Step -> Custom**, set to:
+
+```bash
+if [ "$VERCEL_GIT_COMMIT_REF" = "master" ]; then exit 1; else exit 0; fi
+```
+
+(exit `0` skips the deployment, exit `1` lets it proceed — so only `master`
+builds.) If deploys are happening on other branches, check that setting first.
+
+To deploy manually:
 
 ```bash
 vercel deploy --prod
