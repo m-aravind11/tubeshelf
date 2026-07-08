@@ -1,8 +1,24 @@
+import asyncio
 import httpx
 from dataclasses import dataclass
 
 
 YT_API_BASE = "https://www.googleapis.com/youtube/v3"
+
+
+async def _post_with_404_retry(
+    client: httpx.AsyncClient, url: str, headers: dict, params: dict, json: dict, attempts: int = 3
+) -> httpx.Response:
+    """POST with retries on 404: used right after creating a resource that
+    can take a moment to propagate through YouTube's backend, so acting on
+    it immediately sometimes 404s transiently."""
+    for attempt in range(attempts):
+        resp = await client.post(url, headers=headers, params=params, json=json)
+        if resp.status_code == 404 and attempt < attempts - 1:
+            await asyncio.sleep(0.5 * (attempt + 1))
+            continue
+        resp.raise_for_status()
+        return resp
 
 
 @dataclass
@@ -136,7 +152,8 @@ class YouTubeClient:
         """Add video to playlist. Caller is responsible for checking
         get_playlist_video_ids first, the API inserts duplicates silently."""
         async with httpx.AsyncClient() as client:
-            resp = await client.post(
+            await _post_with_404_retry(
+                client,
                 f"{YT_API_BASE}/playlistItems",
                 headers={**self._headers, "Content-Type": "application/json"},
                 params={"part": "snippet"},
@@ -150,7 +167,6 @@ class YouTubeClient:
                     }
                 },
             )
-            resp.raise_for_status()
             return True
 
     async def ensure_playlist(
