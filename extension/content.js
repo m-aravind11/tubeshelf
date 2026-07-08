@@ -157,9 +157,9 @@
         border: "1px solid #333",
         borderRadius: "6px",
         fontSize: "12px",
-        padding: "6px 4px",
+        padding: "6px 20px 6px 8px",
         flexShrink: "0",
-        width: "88px",
+        width: "120px",
       });
 
       const input = document.createElement("input");
