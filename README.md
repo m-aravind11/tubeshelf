@@ -6,9 +6,9 @@ video's own description. A "Shelf It" button on the watch page previews the
 parsed tags, lets you edit them, then creates/updates the playlists on
 confirm.
 
-- `extension/` — Chrome MV3 extension (content script, background worker, popup)
-- `api/` — FastAPI backend (parses metadata, talks to the YouTube Data API v3)
-- `lib/` — shared backend logic (description parser, YouTube API client)
+- `extension/`: Chrome MV3 extension (content script, background worker, popup)
+- `api/`: FastAPI backend (parses metadata, talks to the YouTube Data API v3)
+- `lib/`: shared backend logic (description parser, YouTube API client)
 
 ## Backend
 
@@ -30,7 +30,7 @@ uvicorn api.index:app --reload --port 8000
 
 Health check: `curl http://localhost:8000/api/health`
 
-The backend is stateless — no database, no `.env` required to run it. It
+The backend is stateless: no database, no `.env` required to run it. It
 only needs the OAuth access token the extension sends with each request.
 
 ### Deploy
@@ -38,16 +38,18 @@ only needs the OAuth access token the extension sends with each request.
 Deployed on Vercel; `vercel.json` rewrites `/api/*` to `api/index.py`.
 
 **Only pushes to `master` should trigger a deployment.** `vercel.json`'s
-`git.deploymentEnabled` does *not* enforce this by itself — Vercel deploys
+`git.deploymentEnabled` does *not* enforce this by itself. Vercel deploys
 every branch push by default, and that field can only disable specific named
-branches, not allowlist one. The actual gate is in the Vercel dashboard:
+branches, not allowlist one. 
+
+The actual fix is in the Vercel dashboard:
 **Project Settings -> Build and Deployment -> Ignored Build Step -> Custom**, set to:
 
 ```bash
 if [ "$VERCEL_GIT_COMMIT_REF" = "master" ]; then exit 1; else exit 0; fi
 ```
 
-(exit `0` skips the deployment, exit `1` lets it proceed — so only `master`
+(exit `0` skips the deployment, exit `1` lets it proceed, so only `master`
 builds.) If deploys are happening on other branches, check that setting first.
 
 To deploy manually:
@@ -62,7 +64,7 @@ vercel deploy --prod
 
 1. Go to `chrome://extensions`, enable **Developer mode**.
 2. Click **Load unpacked**, select the `extension/` folder.
-3. Open a YouTube or YouTube Music song page — a "Shelf It" button appears
+3. Open a YouTube or YouTube Music song page. A "Shelf It" button appears
    near the bottom of the page.
 4. Click the extension icon and sign in with Google to grant the
    `youtube` OAuth scope (needed to read video metadata and manage playlists).
