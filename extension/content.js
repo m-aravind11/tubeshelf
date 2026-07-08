@@ -442,7 +442,8 @@
         let organizeResult;
         try {
           organizeResult = await withTimeout(
-            chrome.runtime.sendMessage({ action: "organize", videoId, title, entries: finalEntries })
+            chrome.runtime.sendMessage({ action: "organize", videoId, title, entries: finalEntries }),
+            45000
           );
         } catch (err) {
           organizeResult = { error: "extension_error", message: "Extension error, try reloading the page." };
