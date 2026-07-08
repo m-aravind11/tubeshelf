@@ -25,7 +25,19 @@ app.add_middleware(
 )
 
 
+class PlaylistEntryIn(BaseModel):
+    category: str
+    value: str
+
+
 class OrganizeRequest(BaseModel):
+    video_id: str
+    access_token: str
+    title: str = ""
+    entries: list[PlaylistEntryIn]
+
+
+class PreviewRequest(BaseModel):
     video_id: str
     access_token: str
 
@@ -37,10 +49,21 @@ class PlaylistEntry(BaseModel):
     added: bool
 
 
+class PreviewEntry(BaseModel):
+    category: str
+    value: str
+    already_added: bool = False
+
+
+class PreviewResponse(BaseModel):
+    video_id: str
+    title: str
+    entries: list[PreviewEntry]
+
+
 class OrganizeResponse(BaseModel):
     video_id: str
     title: str
-    metadata: dict
     playlists: list[PlaylistEntry]
 
 
@@ -49,8 +72,10 @@ async def health():
     return {"status": "ok"}
 
 
-@app.post("/api/organize", response_model=OrganizeResponse)
-async def organize(body: OrganizeRequest):
+@app.post("/api/preview", response_model=PreviewResponse)
+async def preview(body: PreviewRequest):
+    """Parse a video's metadata into proposed playlist entries, without creating
+    or modifying anything — the user confirms/edits these before /api/organize."""
     client = YouTubeClient(body.access_token)
 
     video = await client.get_video(body.video_id)
@@ -58,7 +83,45 @@ async def organize(body: OrganizeRequest):
         raise HTTPException(status_code=404, detail="Video not found")
 
     meta = parse_description(video.description, video.tags)
-    meta.title = video.title
+    raw_entries = meta.playlist_entries()
+
+    # Check whether the video is already sitting in the matching playlist for
+    # any of these entries, so the user gets a heads-up before re-adding it.
+    existing_playlists: dict[str, str] = {}
+    if raw_entries:
+        try:
+            existing_playlists = await client.get_my_playlists()
+        except httpx.HTTPStatusError:
+            pass  # non-fatal — preview still works, just without the heads-up
+
+    entries: list[PreviewEntry] = []
+    for category, value in raw_entries:
+        playlist_name = f"{category}: {value}"
+        already_added = False
+        playlist_id = existing_playlists.get(playlist_name)
+        if playlist_id:
+            try:
+                video_ids = await client.get_playlist_video_ids(playlist_id)
+                already_added = body.video_id in video_ids
+            except httpx.HTTPStatusError:
+                pass
+        entries.append(PreviewEntry(category=category, value=value, already_added=already_added))
+
+    return PreviewResponse(
+        video_id=body.video_id,
+        title=video.title,
+        entries=entries,
+    )
+
+
+@app.post("/api/organize", response_model=OrganizeResponse)
+async def organize(body: OrganizeRequest):
+    """Create/update playlists for the user-confirmed entries from /api/preview."""
+    entries = [e for e in body.entries if e.category.strip() and e.value.strip()]
+    if not entries:
+        raise HTTPException(status_code=400, detail="No playlist entries provided")
+
+    client = YouTubeClient(body.access_token)
 
     try:
         existing_playlists = await client.get_my_playlists()
@@ -72,18 +135,25 @@ async def organize(body: OrganizeRequest):
 
     results: list[PlaylistEntry] = []
 
-    for category, value in meta.playlist_entries():
-        playlist_name = f"{category}: {value}"
+    for entry in entries:
+        playlist_name = f"{entry.category.strip()}: {entry.value.strip()}"
         try:
             pl = await client.ensure_playlist(playlist_name, existing_playlists)
-            added = await client.add_video_to_playlist(pl.playlist_id, body.video_id)
+
+            already_present = False
+            if not pl.created:
+                existing_video_ids = await client.get_playlist_video_ids(pl.playlist_id)
+                already_present = body.video_id in existing_video_ids
+
+            added = False if already_present else await client.add_video_to_playlist(pl.playlist_id, body.video_id)
+
             results.append(PlaylistEntry(
                 name=playlist_name,
                 playlist_id=pl.playlist_id,
                 created=pl.created,
                 added=added,
             ))
-        except httpx.HTTPStatusError as e:
+        except httpx.HTTPStatusError:
             results.append(PlaylistEntry(
                 name=playlist_name,
                 playlist_id="",
@@ -93,14 +163,6 @@ async def organize(body: OrganizeRequest):
 
     return OrganizeResponse(
         video_id=body.video_id,
-        title=video.title,
-        metadata={
-            "singers": meta.singers,
-            "music_director": meta.music_director,
-            "lyricist": meta.lyricist,
-            "film": meta.film,
-            "language": meta.language,
-            "year": meta.year,
-        },
+        title=body.title,
         playlists=results,
     )

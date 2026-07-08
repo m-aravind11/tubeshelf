@@ -18,13 +18,17 @@ class SongMetadata:
         for singer in self.singers:
             entries.append(("Singer", singer))
         if self.music_director:
-            entries.append(("Music", self.music_director))
+            entries.append(("Music Director", self.music_director))
         if self.lyricist:
-            entries.append(("Lyrics", self.lyricist))
+            entries.append(("Lyricist", self.lyricist))
         if self.film:
-            entries.append(("Film", self.film))
+            entries.append(("Movie", self.film))
         if self.language:
             entries.append(("Language", self.language))
+        if self.year:
+            entries.append(("Year", self.year))
+        if self.year.isdigit() and len(self.year) == 4:
+            entries.append(("Decade", f"{self.year[:3]}0s"))
         return entries
 
 
