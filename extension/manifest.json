@@ -28,8 +28,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.youtube.com/watch*",
-        "https://music.youtube.com/watch*"
+        "https://www.youtube.com/*",
+        "https://music.youtube.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
