@@ -96,8 +96,45 @@ class YouTubeClient:
             resp.raise_for_status()
             return resp.json()["id"]
 
+    async def get_playlist_video_ids(self, playlist_id: str) -> set[str]:
+        """Return the set of video IDs already in a playlist (YouTube allows duplicate
+        inserts silently, so callers must check this themselves before adding)."""
+        video_ids: set[str] = set()
+        page_token: str | None = None
+
+        async with httpx.AsyncClient() as client:
+            while True:
+                params: dict = {
+                    "part": "contentDetails",
+                    "playlistId": playlist_id,
+                    "maxResults": 50,
+                    "fields": "items(contentDetails/videoId),nextPageToken",
+                }
+                if page_token:
+                    params["pageToken"] = page_token
+
+                resp = await client.get(
+                    f"{YT_API_BASE}/playlistItems",
+                    headers=self._headers,
+                    params=params,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+
+                for item in data.get("items", []):
+                    vid = item.get("contentDetails", {}).get("videoId")
+                    if vid:
+                        video_ids.add(vid)
+
+                page_token = data.get("nextPageToken")
+                if not page_token:
+                    break
+
+        return video_ids
+
     async def add_video_to_playlist(self, playlist_id: str, video_id: str) -> bool:
-        """Add video. Returns False if already present (409), raises on other errors."""
+        """Add video to playlist. Caller is responsible for checking
+        get_playlist_video_ids first — the API inserts duplicates silently."""
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{YT_API_BASE}/playlistItems",
@@ -113,8 +150,6 @@ class YouTubeClient:
                     }
                 },
             )
-            if resp.status_code == 409:
-                return False
             resp.raise_for_status()
             return True
 

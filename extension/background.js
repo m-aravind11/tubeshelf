@@ -22,7 +22,41 @@ async function isSignedOut() {
   });
 }
 
-async function organizeVideo(videoId) {
+async function previewVideo(videoId) {
+  if (await isSignedOut()) {
+    return { error: "signed_out", message: "Sign in to TubeShelf first — click the extension icon." };
+  }
+
+  let token;
+  try {
+    token = await getAccessToken();
+  } catch (err) {
+    return { error: "auth_failed", message: "Sign in to TubeShelf first — click the extension icon." };
+  }
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/preview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ video_id: videoId, access_token: token }),
+    });
+
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        chrome.identity.removeCachedAuthToken({ token }, () => {});
+      }
+      const err = await resp.json().catch(() => ({}));
+      return { error: "api_error", message: err.detail || resp.statusText };
+    }
+
+    const data = await resp.json();
+    return { ok: true, data };
+  } catch (err) {
+    return { error: "network_error", message: String(err) };
+  }
+}
+
+async function organizeVideo(videoId, title, entries) {
   if (await isSignedOut()) {
     return { error: "signed_out", message: "Sign in to TubeShelf first — click the extension icon." };
   }
@@ -38,7 +72,7 @@ async function organizeVideo(videoId) {
     const resp = await fetch(`${API_BASE}/api/organize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ video_id: videoId, access_token: token }),
+      body: JSON.stringify({ video_id: videoId, access_token: token, title, entries }),
     });
 
     if (!resp.ok) {
@@ -69,8 +103,13 @@ function clearAuthAndSetFlag(callback) {
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.action === "preview") {
+    previewVideo(msg.videoId).then(sendResponse);
+    return true;
+  }
+
   if (msg.action === "organize") {
-    organizeVideo(msg.videoId).then(sendResponse);
+    organizeVideo(msg.videoId, msg.title, msg.entries).then(sendResponse);
     return true;
   }
 
