@@ -22,7 +22,11 @@ async function isSignedOut() {
   });
 }
 
-async function previewVideo(videoId) {
+// Posts to the API with the current access token. On a 401 (expired token,
+// which happens routinely mid-session since Google tokens last ~1hr), drops
+// the stale cached token and retries once with a freshly-fetched one before
+// giving up, so the user isn't forced to manually retry every hour.
+async function callApi(path, buildBody) {
   if (await isSignedOut()) {
     return { error: "signed_out", message: "Sign in to TubeShelf first, click the extension icon." };
   }
@@ -34,61 +38,48 @@ async function previewVideo(videoId) {
     return { error: "auth_failed", message: "Sign in to TubeShelf first, click the extension icon." };
   }
 
-  try {
-    const resp = await fetch(`${API_BASE}/api/preview`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ video_id: videoId, access_token: token }),
-    });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const resp = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildBody(token)),
+      });
 
-    if (!resp.ok) {
-      if (resp.status === 401) {
-        chrome.identity.removeCachedAuthToken({ token }, () => {});
+      if (!resp.ok) {
+        if (resp.status === 401 && attempt === 0) {
+          chrome.identity.removeCachedAuthToken({ token }, () => {});
+          try {
+            token = await getAccessToken();
+            continue;
+          } catch (err) {
+            return { error: "auth_failed", message: "Sign in to TubeShelf first, click the extension icon." };
+          }
+        }
+        const err = await resp.json().catch(() => ({}));
+        return { error: "api_error", message: err.detail || resp.statusText };
       }
-      const err = await resp.json().catch(() => ({}));
-      return { error: "api_error", message: err.detail || resp.statusText };
-    }
 
-    const data = await resp.json();
-    return { ok: true, data };
-  } catch (err) {
-    return { error: "network_error", message: String(err) };
+      const data = await resp.json();
+      return { ok: true, data };
+    } catch (err) {
+      return { error: "network_error", message: String(err) };
+    }
   }
 }
 
+async function previewVideo(videoId) {
+  return callApi("/api/preview", (token) => ({ video_id: videoId, access_token: token }));
+}
+
 async function organizeVideo(videoId, title, entries) {
-  if (await isSignedOut()) {
-    return { error: "signed_out", message: "Sign in to TubeShelf first, click the extension icon." };
+  const result = await callApi("/api/organize", (token) => ({
+    video_id: videoId, access_token: token, title, entries,
+  }));
+  if (result.ok) {
+    await chrome.storage.local.set({ lastResult: result.data, lastResultAt: Date.now() });
   }
-
-  let token;
-  try {
-    token = await getAccessToken();
-  } catch (err) {
-    return { error: "auth_failed", message: "Sign in to TubeShelf first, click the extension icon." };
-  }
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/organize`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ video_id: videoId, access_token: token, title, entries }),
-    });
-
-    if (!resp.ok) {
-      if (resp.status === 401) {
-        chrome.identity.removeCachedAuthToken({ token }, () => {});
-      }
-      const err = await resp.json().catch(() => ({}));
-      return { error: "api_error", message: err.detail || resp.statusText };
-    }
-
-    const data = await resp.json();
-    await chrome.storage.local.set({ lastResult: data, lastResultAt: Date.now() });
-    return { ok: true, data };
-  } catch (err) {
-    return { error: "network_error", message: String(err) };
-  }
+  return result;
 }
 
 function clearAuthAndSetFlag(callback) {

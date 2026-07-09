@@ -18,10 +18,10 @@ app = FastAPI(title="TubeShelf API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://www.youtube.com",
-        "chrome-extension://*",
-    ],
+    # allow_origins does exact string matching, so "chrome-extension://*" would
+    # never actually match a real extension origin; use allow_origin_regex for it.
+    allow_origins=["https://www.youtube.com"],
+    allow_origin_regex=r"^chrome-extension://[a-z]+$",
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
 )
