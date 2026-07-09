@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -34,6 +35,7 @@ app.mount(
     name="assets",
 )
 
+logger = logging.getLogger(__name__)
 
 class PlaylistEntryIn(BaseModel):
     category: str
@@ -170,7 +172,11 @@ async def organize(body: OrganizeRequest):
         playlist_name = f"{entry.category.strip()}: {entry.value.strip()}"
         try:
             pl = await client.ensure_playlist(playlist_name, existing_playlists)
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as e:
+            logger.error(
+                "ensure_playlist failed for %r: %s %s",
+                playlist_name, e.response.status_code, e.response.text,
+            )
             results.append(PlaylistEntry(
                 name=playlist_name,
                 playlist_id="",
@@ -186,7 +192,11 @@ async def organize(body: OrganizeRequest):
                 already_present = body.video_id in existing_video_ids
 
             added = False if already_present else await client.add_video_to_playlist(pl.playlist_id, body.video_id)
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as e:
+            logger.error(
+                "add_video_to_playlist failed for playlist %r (%s), video %s: %s %s",
+                playlist_name, pl.playlist_id, body.video_id, e.response.status_code, e.response.text,
+            )
             added = False
 
         results.append(PlaylistEntry(
