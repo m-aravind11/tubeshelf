@@ -34,7 +34,7 @@ class SongMetadata:
 
 # Label channel description patterns (T-Series, Sony Music South, Zee Music, etc.)
 _LABEL_PATTERNS: list[tuple[str, str]] = [
-    ("singers", r"(?:Singer|Vocals?|Sung By)\s*[:\-]\s*(.+)"),
+    ("singers", r"(?:Singers?|Vocals?|Sung By)\s*[:\-]\s*(.+)"),
     ("music_director", r"(?:Music(?:\s+Director)?|Composer|Composed By)\s*[:\-]\s*(.+)"),
     ("lyricist", r"(?:Lyrics?(?:\s+By)?|Lyricist)\s*[:\-]\s*(.+)"),
     ("film", r"(?:Film|Movie|Album)\s*[:\-]\s*(.+)"),
@@ -76,8 +76,9 @@ def parse_description(description: str, tags: list[str] | None = None) -> SongMe
                 elif not getattr(meta, field_name):
                     setattr(meta, field_name, val)
 
-    # Try Topic channel format (multiline block)
-    if not meta.music_director and not meta.singers:
+    # Try Topic channel format (multiline block). Gated on singers only,
+    # Composer/Lyricist already get caught by the label patterns above.
+    if not meta.singers:
         for line in lines:
             for field_name, pattern in _TOPIC_PATTERNS:
                 m = re.match(pattern, line.strip(), re.IGNORECASE)
@@ -91,11 +92,11 @@ def parse_description(description: str, tags: list[str] | None = None) -> SongMe
         # Topic format: "Song · Artist1 · Artist2" on first non-empty line
         for line in lines:
             stripped = line.strip()
-            if "·" in stripped and not meta.singers:
-                parts = [p.strip() for p in stripped.split("·")]
-                if len(parts) >= 2:
-                    meta.singers = [_clean(p) for p in parts[1:] if _clean(p)]
-                break
+            if not stripped:
+                continue
+            if not meta.singers and "·" in stripped:
+                meta.singers = [_clean(p) for p in stripped.split("·")[1:] if _clean(p)]
+            break
 
     # Year from description
     if not meta.year:
