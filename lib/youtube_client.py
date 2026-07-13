@@ -9,11 +9,18 @@ YT_API_BASE = "https://www.googleapis.com/youtube/v3"
 async def _post_with_404_retry(
     client: httpx.AsyncClient, url: str, headers: dict, params: dict, json: dict, attempts: int = 5
 ) -> httpx.Response:
-    """POST with retries on 404: used right after creating a resource that
-    can take a moment to propagate through YouTube's backend, so acting on
-    it immediately sometimes 404s transiently."""
+    """POST with retries on 404 or transient network errors: used right after
+    creating a resource that can take a moment to propagate through YouTube's
+    backend, so acting on it immediately sometimes 404s, or even times out /
+    resets the connection, transiently."""
     for attempt in range(attempts):
-        resp = await client.post(url, headers=headers, params=params, json=json)
+        try:
+            resp = await client.post(url, headers=headers, params=params, json=json)
+        except httpx.TransportError:
+            if attempt < attempts - 1:
+                await asyncio.sleep(2 ** attempt)
+                continue
+            raise
         if resp.status_code == 404 and attempt < attempts - 1:
             await asyncio.sleep(2 ** attempt)
             continue
