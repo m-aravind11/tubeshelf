@@ -141,6 +141,32 @@ async def test_add_video_to_playlist_raises_immediately_on_non_404_error(client)
         await client.add_video_to_playlist("playlist-1", "video-1")
 
 
+@respx.mock
+async def test_add_video_to_playlist_retries_on_transient_network_error(client, monkeypatch):
+    monkeypatch.setattr("lib.youtube_client.asyncio.sleep", _no_sleep)
+
+    route = respx.post(f"{YT_API_BASE}/playlistItems")
+    route.side_effect = [
+        httpx.ConnectTimeout("connection timed out"),
+        httpx.Response(200, json={"id": "item-1"}),
+    ]
+
+    result = await client.add_video_to_playlist("playlist-1", "video-1")
+
+    assert result is True
+    assert route.call_count == 2
+
+
+@respx.mock
+async def test_add_video_to_playlist_raises_after_exhausting_network_error_retries(client, monkeypatch):
+    monkeypatch.setattr("lib.youtube_client.asyncio.sleep", _no_sleep)
+
+    respx.post(f"{YT_API_BASE}/playlistItems").mock(side_effect=httpx.ConnectTimeout("connection timed out"))
+
+    with pytest.raises(httpx.ConnectTimeout):
+        await client.add_video_to_playlist("playlist-1", "video-1")
+
+
 async def test_ensure_playlist_returns_existing_without_creating(client):
     existing = {"Singer: Arijit Singh": "existing-id"}
 

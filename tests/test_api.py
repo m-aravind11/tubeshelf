@@ -202,3 +202,32 @@ def test_organize_continues_after_one_entry_fails(client, monkeypatch):
     assert results["Singer: Arijit Singh"]["added"] is False
     assert results["Movie: Pathaan"]["created"] is True
     assert results["Movie: Pathaan"]["added"] is True
+
+
+def test_organize_reports_add_failure_on_network_error_instead_of_500(client, monkeypatch):
+    """A newly created playlist can be flaky to write to right away (timeout,
+    connection reset), not just 404. That must land as added=False for that
+    entry, not blow up the whole request and lose every other entry's result."""
+    async def get_my_playlists(self):
+        return {}
+
+    async def ensure_playlist(self, title, existing):
+        existing[title] = "new-playlist-id"
+        return PlaylistResult(playlist_id="new-playlist-id", name=title, created=True)
+
+    async def add_video_to_playlist(self, playlist_id, video_id):
+        raise httpx.ConnectTimeout("connection timed out")
+
+    monkeypatch.setattr(api_index.YouTubeClient, "get_my_playlists", get_my_playlists)
+    monkeypatch.setattr(api_index.YouTubeClient, "ensure_playlist", ensure_playlist)
+    monkeypatch.setattr(api_index.YouTubeClient, "add_video_to_playlist", add_video_to_playlist)
+
+    resp = client.post("/api/organize", json={
+        "video_id": "v1", "access_token": "tok", "title": "Kesariya",
+        "entries": [{"category": "Singer", "value": "Arijit Singh"}],
+    })
+
+    assert resp.status_code == 200
+    data = resp.json()["playlists"][0]
+    assert data["created"] is True
+    assert data["added"] is False

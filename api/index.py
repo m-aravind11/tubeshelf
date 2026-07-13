@@ -192,10 +192,15 @@ async def organize(body: OrganizeRequest):
                 already_present = body.video_id in existing_video_ids
 
             added = False if already_present else await client.add_video_to_playlist(pl.playlist_id, body.video_id)
-        except httpx.HTTPStatusError as e:
+        except httpx.HTTPError as e:
+            # add_video_to_playlist can fail with a plain network error (timeout,
+            # connection reset), not just a bad status code, especially right
+            # after creating the playlist. httpx.HTTPError is the shared base of
+            # both, so this catches it instead of letting it 500 the whole
+            # request and lose every other entry's result too.
             logger.error(
-                "add_video_to_playlist failed for playlist %r (%s), video %s: %s %s",
-                playlist_name, pl.playlist_id, body.video_id, e.response.status_code, e.response.text,
+                "add_video_to_playlist failed for playlist %r (%s), video %s: %s",
+                playlist_name, pl.playlist_id, body.video_id, e,
             )
             added = False
 
