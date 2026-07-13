@@ -361,20 +361,39 @@
       });
     }
 
+    const ICON_DEFAULT_D = "M4 6h16M4 10h16M4 14h16M4 18h16";
+    const ICON_CHECK_D = "M5 13l4 4L19 7";
+    const BG_DEFAULT = "#cc0000";
+    const BG_DEFAULT_HOVER = "#aa0000";
+    const BG_SHELVED = "#1a7f37";
+    const BG_SHELVED_HOVER = "#146a2e";
+
+    let isShelved = false;
+
     btn.addEventListener("mouseenter", () => {
-      btn.style.background = "#aa0000";
+      btn.style.background = isShelved ? BG_SHELVED_HOVER : BG_DEFAULT_HOVER;
       btn.style.transform = isYTMusic ? "translateX(-50%) translateY(-2px)" : "translateY(-2px)";
     });
     btn.addEventListener("mouseleave", () => {
-      btn.style.background = "#cc0000";
+      btn.style.background = isShelved ? BG_SHELVED : BG_DEFAULT;
       btn.style.transform = isYTMusic ? "translateX(-50%)" : "";
     });
+
+    // Toggles the icon/background between the default pill and the "already
+    // shelved" confirmation look. Kept separate from the text so setLoading
+    // and setShelved can each drive it independently.
+    function setShelvedVisual(shelved) {
+      isShelved = shelved;
+      btn.querySelector("svg path").setAttribute("d", shelved ? ICON_CHECK_D : ICON_DEFAULT_D);
+      btn.style.background = shelved ? BG_SHELVED : BG_DEFAULT;
+    }
 
     function setLoading(loading, label) {
       const iconEl = btn.querySelector("svg");
       const spanEl = btn.querySelector("span");
       btn.disabled = loading;
       if (loading) {
+        setShelvedVisual(false);
         iconEl.style.display = "none";
         const spinner = document.createElement("span");
         spinner.id = "tubeshelf-spinner";
@@ -390,6 +409,21 @@
         iconEl.style.display = "";
         spanEl.textContent = "Shelf It";
       }
+    }
+
+    // Transient: the video may already be shelved and the user just wants to
+    // add another tag, so this shouldn't permanently replace the actionable
+    // "Shelf It" label, just confirm success for a moment before reverting.
+    function setShelved() {
+      const spanEl = btn.querySelector("span");
+      spanEl.textContent = "Shelved";
+      setShelvedVisual(true);
+      setTimeout(() => {
+        if (spanEl.textContent === "Shelved") {
+          spanEl.textContent = "Shelf It";
+          setShelvedVisual(false);
+        }
+      }, 2500);
     }
 
     btn.addEventListener("click", async () => {
@@ -461,6 +495,9 @@
           if (alreadyIn) message += `, ${alreadyIn} already in`;
           if (failed) message += `, ${failed} failed`;
           showToast(message);
+
+          // Stale: user already moved to a different video, don't mislabel it as shelved.
+          if (requestId === activeRequestId) setShelved();
         } else {
           modal.setLoading(false);
           showToast(organizeResult.message || "Something went wrong", true);
