@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TubeShelf",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Auto-organize YouTube and YT Music songs into playlists by Singer, Music Director, Film, and more.",
 
   "permissions": [
